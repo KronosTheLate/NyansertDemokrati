@@ -1,0 +1,47 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: nduser
+      POSTGRES_PASSWORD: ndpass
+      POSTGRES_DB: nyansertdemokrati
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nduser -d nyansertdemokrati"]
+      interval: 2s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ndnet
+
+  backend:
+    build: ./backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://nduser:ndpass@postgres:5432/nyansertdemokrati
+    ports:
+      - "8000:8000"
+    networks:
+      - ndnet
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+    networks:
+      - ndnet
+
+volumes:
+  postgres_data:
+
+networks:
+  ndnet:
+    driver: bridge
