@@ -42,6 +42,12 @@ class DistributionOut(BaseModel):
     claim_quality_distribution: dict[int, int]
 
 
+class UserVoteOut(BaseModel):
+    claim_id: int
+    vote_value: int
+    claim_quality: bool
+
+
 @router.get("/users", response_model=list[UserOut])
 def list_users(db: Session = Depends(get_db)):
     return db.query(User).order_by(User.id).all()
@@ -50,6 +56,22 @@ def list_users(db: Session = Depends(get_db)):
 @router.get("/claims", response_model=list[ClaimOut])
 def list_claims(db: Session = Depends(get_db)):
     return db.query(Claim).order_by(Claim.id).all()
+
+
+@router.get("/users/{user_id}/votes", response_model=list[UserVoteOut])
+def get_user_votes(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    votes = (
+        db.query(ClaimVote.claim_id, ClaimVote.vote_value, ClaimVote.claim_quality)
+        .filter(
+            ClaimVote.user_id == user_id,
+            ClaimVote.is_current == True,
+        )
+        .all()
+    )
+    return [{"claim_id": cid, "vote_value": vv, "claim_quality": cq} for cid, vv, cq in votes]
 
 
 @router.get("/claims/{claim_id}/distribution", response_model=DistributionOut)

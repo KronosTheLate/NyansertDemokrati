@@ -5,6 +5,8 @@ export default function UserDropdown({ users, selectedUserId, onSelect, disabled
     <div style={styles.container}>
       <label htmlFor="user-select" style={styles.label}>
         Velg deg selv
+        <br />
+        Dev-note: Bruker-ID skal settes i løpet av en login som ikke er implementert enda.
       </label>
       <select
         id="user-select"

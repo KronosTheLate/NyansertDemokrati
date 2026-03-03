@@ -1,23 +1,7 @@
 import React from 'react'
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-} from 'recharts'
+import { LABELS } from './DistributionCharts'
 
-const LABELS = {
-  '-2': 'Helt uenig',
-  '-1': 'Delvis uenig',
-  '0': 'Nøytral',
-  '1': 'Delvis enig',
-  '2': 'Helt enig',
-}
-
-export default function ClaimView({ claim, distribution, selectedUserId, onVote }) {
+export default function ClaimView({ claim, selectedUserId, onVote }) {
   const [voteValue, setVoteValue] = React.useState(0)
   const [claimQuality, setClaimQuality] = React.useState(true)
   const [submitting, setSubmitting] = React.useState(false)
@@ -112,59 +96,6 @@ export default function ClaimView({ claim, distribution, selectedUserId, onVote 
           {submitting ? 'Lagrer…' : 'Stem'}
         </button>
       </form>
-
-      {distribution && (
-        <div style={styles.charts}>
-          <h3 style={styles.chartTitle}>Stemmefordeling</h3>
-          <DistributionCharts distribution={distribution} />
-        </div>
-      )}
-    </div>
-  )
-}
-
-function DistributionCharts({ distribution }) {
-
-  const voteData = [-2, -1, 0, 1, 2].map((v) => ({
-    name: LABELS[String(v)],
-    value: distribution.vote_distribution[v] ?? 0,
-    fullValue: v,
-  }))
-
-  const qualityData = [-2, -1, 0, 1, 2].map((v) => ({
-    name: String(v),
-    value: distribution.claim_quality_distribution[v] ?? 0,
-  }))
-
-  const COLORS = ['#f85149', '#d29922', '#8b9eb5', '#3fb950', '#4a90d9']
-
-  return (
-    <div style={styles.chartsGrid}>
-      <div style={styles.chartBox}>
-        <ResponsiveContainer width="100%" height={200}>
-          <BarChart data={voteData} margin={{ top: 8, right: 8, left: 8, bottom: 8 }}>
-            <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-            <YAxis allowDecimals={false} />
-            <Tooltip />
-            <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-              {voteData.map((_, i) => (
-                <Cell key={i} fill={COLORS[i]} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-      <div style={styles.chartBox}>
-        <p style={styles.chartSubtitle}>Kvalitetsvurdering (-2 til 2)</p>
-        <ResponsiveContainer width="100%" height={160}>
-          <BarChart data={qualityData} margin={{ top: 8, right: 8, left: 8, bottom: 8 }}>
-            <XAxis dataKey="name" />
-            <YAxis allowDecimals={false} />
-            <Tooltip />
-            <Bar dataKey="value" fill="var(--color-accent)" radius={[4, 4, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
     </div>
   )
 }
@@ -192,7 +123,7 @@ const styles = {
     fontSize: '0.95rem',
   },
   form: {
-    marginBottom: '1.5rem',
+    marginBottom: 0,
   },
   section: {
     marginBottom: '1.25rem',
@@ -239,28 +170,5 @@ const styles = {
     border: 'none',
     borderRadius: 'var(--radius)',
     cursor: 'pointer',
-  },
-  charts: {
-    marginTop: '1.5rem',
-    paddingTop: '1.5rem',
-    borderTop: '1px solid var(--color-border)',
-  },
-  chartTitle: {
-    margin: '0 0 1rem',
-    fontSize: '1rem',
-    fontWeight: 600,
-  },
-  chartSubtitle: {
-    margin: '0 0 0.5rem',
-    fontSize: '0.85rem',
-    color: 'var(--color-text-muted)',
-  },
-  chartsGrid: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '1.5rem',
-  },
-  chartBox: {
-    minHeight: 180,
   },
 }

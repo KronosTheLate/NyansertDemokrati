@@ -36,3 +36,16 @@ body {
     grid-template-columns: 1fr !important;
   }
 }
+
+.nav-link:hover {
+  text-decoration: underline;
+}
+
+.card:hover {
+  border-color: var(--color-accent);
+}
+
+.claim-row-pill:not(:disabled):hover {
+  border-color: var(--color-accent);
+  opacity: 0.9;
+}

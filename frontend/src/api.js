@@ -17,6 +17,11 @@ export async function getClaims() {
   return data
 }
 
+export async function getMyVotes(userId) {
+  const { data } = await api.get(`/users/${userId}/votes`)
+  return data
+}
+
 export async function getDistribution(claimId) {
   const { data } = await api.get(`/claims/${claimId}/distribution`)
   return data
