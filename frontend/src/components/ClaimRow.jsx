@@ -1,8 +1,11 @@
 import React from 'react'
 import { LABELS } from './DistributionCharts'
 
-const OPINION_VALUES = [-2, -1, 0, 1, 2]
-const COLORS = ['#e5534b', '#d29922', '#6e7681', '#3fb950', '#58a6ff']
+const QUALITY_LABELS = {
+  '-1': 'Dårlig',
+  '0': 'Middels',
+  '1': 'Godt formulert',
+}
 
 export default function ClaimRow({ claim, voteValue, claimQuality, onChange, disabled }) {
   const handleOpinionChange = (v) => {
@@ -16,57 +19,46 @@ export default function ClaimRow({ claim, voteValue, claimQuality, onChange, dis
   return (
     <div style={styles.row}>
       <div style={styles.claimTitle} title={claim.title}>
-        {claim.title.length > 60 ? claim.title.slice(0, 60) + '…' : claim.title}
+        {claim.title.length > 80 ? claim.title.slice(0, 80) + '…' : claim.title}
       </div>
 
       <div style={styles.controls}>
-        <div style={styles.opinionGroup}>
-          {OPINION_VALUES.map((v) => {
-            const isActive = voteValue === v
-            return (
-              <button
-                key={v}
-                type="button"
-                onClick={() => handleOpinionChange(v)}
-                disabled={disabled}
-                title={LABELS[String(v)]}
-                className="claim-row-pill"
-                style={{
-                  ...styles.pill,
-                  ...(isActive ? { ...styles.pillActive, backgroundColor: COLORS[OPINION_VALUES.indexOf(v)] } : {}),
-                }}
-              >
-                {v}
-              </button>
-            )
-          })}
+        <div style={styles.sliderGroup}>
+          <label style={styles.sliderHeading}>Din mening</label>
+          <div style={styles.sliderRow}>
+            <input
+              type="range"
+              min="-2"
+              max="2"
+              step="1"
+              value={voteValue}
+              onChange={(e) => handleOpinionChange(parseInt(e.target.value, 10))}
+              disabled={disabled}
+              className="claim-slider"
+              style={styles.slider}
+            />
+            <span style={styles.sliderLabel}>{LABELS[String(voteValue)]}</span>
+          </div>
         </div>
 
-        <div style={styles.qualityGroup}>
-          <button
-            type="button"
-            className="claim-row-pill"
-            onClick={() => handleQualityChange(true)}
-            disabled={disabled}
-            style={{
-              ...styles.pillSmall,
-              ...(claimQuality === true ? styles.pillActiveQuality : {}),
-            }}
-          >
-            Ja
-          </button>
-          <button
-            type="button"
-            className="claim-row-pill"
-            onClick={() => handleQualityChange(false)}
-            disabled={disabled}
-            style={{
-              ...styles.pillSmall,
-              ...(claimQuality === false ? styles.pillActiveQuality : {}),
-            }}
-          >
-            Nei
-          </button>
+        <div style={styles.divider} />
+
+        <div style={styles.sliderGroup}>
+          <label style={styles.sliderHeading}>Påstandskvalitet</label>
+          <div style={styles.sliderRow}>
+            <input
+              type="range"
+              min="-1"
+              max="1"
+              step="1"
+              value={claimQuality}
+              onChange={(e) => handleQualityChange(parseInt(e.target.value, 10))}
+              disabled={disabled}
+              className="claim-slider"
+              style={{ ...styles.slider, accentColor: 'var(--color-accent)' }}
+            />
+            <span style={{ ...styles.sliderLabel, minWidth: '110px' }}>{QUALITY_LABELS[String(claimQuality)]}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -77,8 +69,8 @@ const styles = {
   row: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '0.5rem',
-    padding: '0.75rem 1rem',
+    gap: '0.75rem',
+    padding: '1rem',
     background: 'var(--color-surface)',
     border: '1px solid var(--color-border)',
     borderRadius: 'var(--radius)',
@@ -88,45 +80,48 @@ const styles = {
     fontSize: '0.95rem',
     color: 'var(--color-text)',
     lineHeight: 1.3,
+    fontWeight: 500,
   },
   controls: {
     display: 'flex',
     flexWrap: 'wrap',
     alignItems: 'center',
-    gap: '0.75rem',
+    gap: '1.5rem',
+    marginTop: '0.25rem',
   },
-  opinionGroup: {
+  sliderGroup: {
     display: 'flex',
-    gap: '2px',
+    flexDirection: 'column',
+    gap: '0.25rem',
+    flex: '1 1 200px',
   },
-  pill: {
-    width: 28,
-    height: 28,
-    padding: 0,
+  sliderHeading: {
     fontSize: '0.8rem',
     fontWeight: 600,
-    border: '2px solid var(--color-border)',
-    borderRadius: 4,
-    background: 'var(--color-surface-elevated)',
     color: 'var(--color-text-muted)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+  },
+  sliderRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.75rem',
+  },
+  slider: {
+    flex: 1,
     cursor: 'pointer',
   },
-  pillActive: {
-    borderColor: 'transparent',
-    color: '#fff',
+  sliderLabel: {
+    fontSize: '0.85rem',
+    color: 'var(--color-text)',
+    whiteSpace: 'nowrap',
+    minWidth: '90px',
+    textAlign: 'left',
   },
-  pillSmall: {
-    padding: '2px 8px',
-    fontSize: '0.8rem',
-    border: '2px solid var(--color-border)',
-    borderRadius: 4,
-    background: 'var(--color-surface-elevated)',
-    color: 'var(--color-text-muted)',
-    cursor: 'pointer',
-  },
-  pillActiveQuality: {
-    borderColor: 'var(--color-accent)',
-    backgroundColor: 'var(--color-accent)',
-    color: '#fff',
+  divider: {
+    width: '1px',
+    alignSelf: 'stretch',
+    background: 'var(--color-border)',
+    margin: '0 0.5rem',
   },
 }

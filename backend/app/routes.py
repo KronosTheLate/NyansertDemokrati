@@ -34,7 +34,7 @@ class VoteIn(BaseModel):
     user_id: int = Field(..., ge=1)
     claim_id: int = Field(..., ge=1)
     vote_value: int = Field(..., ge=-2, le=2)
-    claim_quality: bool
+    claim_quality: int = Field(..., ge=-1, le=1)
 
 
 class DistributionOut(BaseModel):
@@ -45,7 +45,7 @@ class DistributionOut(BaseModel):
 class UserVoteOut(BaseModel):
     claim_id: int
     vote_value: int
-    claim_quality: bool
+    claim_quality: int
 
 
 @router.get("/users", response_model=list[UserOut])
@@ -91,16 +91,13 @@ def get_claim_distribution(claim_id: int, db: Session = Depends(get_db)):
     for val, count in vote_rows:
         vote_distribution[val] = count
 
-    # Claim quality distribution (claim_quality_votes, current only)
-    from .models import ClaimQualityVote
-
     quality_rows = (
-        db.query(ClaimQualityVote.quality, func.count(1))
-        .filter(ClaimQualityVote.claim_id == claim_id, ClaimQualityVote.is_current == True)
-        .group_by(ClaimQualityVote.quality)
+        db.query(ClaimVote.claim_quality, func.count(ClaimVote.id))
+        .filter(ClaimVote.claim_id == claim_id, ClaimVote.is_current == True)
+        .group_by(ClaimVote.claim_quality)
         .all()
     )
-    claim_quality_distribution = {-2: 0, -1: 0, 0: 0, 1: 0, 2: 0}
+    claim_quality_distribution = {-1: 0, 0: 0, 1: 0}
     for val, count in quality_rows:
         claim_quality_distribution[val] = count
 

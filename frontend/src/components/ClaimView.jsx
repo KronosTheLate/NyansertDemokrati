@@ -1,9 +1,15 @@
 import React from 'react'
 import { LABELS } from './DistributionCharts'
 
+const QUALITY_LABELS = {
+  '-1': 'Dårlig',
+  '0': 'Middels',
+  '1': 'Godt formulert',
+}
+
 export default function ClaimView({ claim, selectedUserId, onVote }) {
   const [voteValue, setVoteValue] = React.useState(0)
-  const [claimQuality, setClaimQuality] = React.useState(true)
+  const [claimQuality, setClaimQuality] = React.useState(0)
   const [submitting, setSubmitting] = React.useState(false)
   const [error, setError] = React.useState(null)
 
@@ -41,48 +47,38 @@ export default function ClaimView({ claim, selectedUserId, onVote }) {
         <div style={styles.section}>
           <label style={styles.label}>Din mening</label>
           <div style={styles.scale}>
-            {[-2, -1, 0, 1, 2].map((v) => (
-              <label key={v} style={styles.radioLabel}>
-                <input
-                  type="radio"
-                  name="vote"
-                  value={v}
-                  checked={voteValue === v}
-                  onChange={() => setVoteValue(v)}
-                  disabled={!canVote}
-                  style={styles.radio}
-                />
-                <span style={styles.radioText}>{LABELS[String(v)]}</span>
-              </label>
-            ))}
+            <input
+              type="range"
+              min="-2"
+              max="2"
+              step="1"
+              value={voteValue}
+              onChange={(e) => setVoteValue(parseInt(e.target.value, 10))}
+              disabled={!canVote}
+              style={{ width: '100%', cursor: 'pointer' }}
+            />
+            <div style={{ textAlign: 'center', marginTop: '0.5rem', fontSize: '0.95rem' }}>
+              <strong>{LABELS[String(voteValue)]}</strong>
+            </div>
           </div>
         </div>
 
-        <div style={styles.section}>
-          <label style={styles.label}>Er påstanden godt formulert?</label>
-          <div style={styles.qualityRow}>
-            <label style={styles.radioLabel}>
-              <input
-                type="radio"
-                name="quality"
-                checked={claimQuality === true}
-                onChange={() => setClaimQuality(true)}
-                disabled={!canVote}
-                style={styles.radio}
-              />
-              <span style={styles.radioText}>Ja</span>
-            </label>
-            <label style={styles.radioLabel}>
-              <input
-                type="radio"
-                name="quality"
-                checked={claimQuality === false}
-                onChange={() => setClaimQuality(false)}
-                disabled={!canVote}
-                style={styles.radio}
-              />
-              <span style={styles.radioText}>Nei</span>
-            </label>
+        <div style={{ ...styles.section, marginTop: '1.5rem', borderTop: '1px solid var(--color-border)', paddingTop: '1.5rem' }}>
+          <label style={styles.label}>Påstandskvalitet (hvordan er den formulert?)</label>
+          <div style={styles.scale}>
+            <input
+              type="range"
+              min="-1"
+              max="1"
+              step="1"
+              value={claimQuality}
+              onChange={(e) => setClaimQuality(parseInt(e.target.value, 10))}
+              disabled={!canVote}
+              style={{ width: '100%', accentColor: 'var(--color-accent)', cursor: 'pointer' }}
+            />
+            <div style={{ textAlign: 'center', marginTop: '0.5rem', fontSize: '0.95rem' }}>
+              <strong>{QUALITY_LABELS[String(claimQuality)]}</strong>
+            </div>
           </div>
         </div>
 
@@ -130,31 +126,17 @@ const styles = {
   },
   label: {
     display: 'block',
-    marginBottom: '0.5rem',
+    marginBottom: '0.75rem',
     fontSize: '0.9rem',
     color: 'var(--color-text-muted)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+    fontWeight: 600,
   },
   scale: {
     display: 'flex',
-    flexWrap: 'wrap',
-    gap: '0.75rem',
-  },
-  qualityRow: {
-    display: 'flex',
-    gap: '1rem',
-  },
-  radioLabel: {
-    display: 'flex',
-    alignItems: 'center',
+    flexDirection: 'column',
     gap: '0.5rem',
-    cursor: 'pointer',
-    fontSize: '0.95rem',
-  },
-  radio: {
-    accentColor: 'var(--color-accent)',
-  },
-  radioText: {
-    whiteSpace: 'nowrap',
   },
   error: {
     color: '#f85149',
@@ -170,5 +152,6 @@ const styles = {
     border: 'none',
     borderRadius: 'var(--radius)',
     cursor: 'pointer',
+    marginTop: '1rem',
   },
 }

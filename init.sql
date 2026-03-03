@@ -20,7 +20,7 @@ CREATE TABLE claim_votes (
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     claim_id INTEGER NOT NULL REFERENCES claims(id) ON DELETE CASCADE,
     vote_value SMALLINT NOT NULL CHECK (vote_value BETWEEN -2 AND 2),
-    claim_quality BOOLEAN NOT NULL,
+    claim_quality SMALLINT NOT NULL CHECK (claim_quality BETWEEN -1 AND 1),
     valid_from TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     valid_to TIMESTAMPTZ,
     is_current BOOLEAN NOT NULL DEFAULT true

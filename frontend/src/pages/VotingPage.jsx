@@ -3,7 +3,7 @@ import UserDropdown from '../components/UserDropdown'
 import ClaimRow from '../components/ClaimRow'
 import { getUsers, getClaims, getMyVotes, castVote } from '../api'
 
-const DEFAULT_VOTE = { vote_value: 0, claim_quality: true }
+const DEFAULT_VOTE = { vote_value: 0, claim_quality: 0 }
 
 function votesEqual(a, b) {
   if (!a && !b) return true
@@ -112,7 +112,7 @@ export default function VotingPage() {
     const v = draftVotesMap[claimId]
     return {
       voteValue: v?.vote_value ?? 0,
-      claimQuality: v?.claim_quality ?? true,
+      claimQuality: v?.claim_quality ?? 0,
     }
   }
 

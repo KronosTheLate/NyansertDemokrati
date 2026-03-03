@@ -23,8 +23,14 @@ export default function DistributionCharts({ distribution }) {
     value: distribution.vote_distribution[v] ?? 0,
   }))
 
-  const qualityData = [-2, -1, 0, 1, 2].map((v) => ({
-    name: String(v),
+  const QUALITY_LABELS = {
+    '-1': 'Dårlig',
+    '0': 'Middels',
+    '1': 'God',
+  }
+
+  const qualityData = [-1, 0, 1].map((v) => ({
+    name: QUALITY_LABELS[String(v)],
     value: distribution.claim_quality_distribution[v] ?? 0,
   }))
 
@@ -48,8 +54,8 @@ export default function DistributionCharts({ distribution }) {
         </ResponsiveContainer>
       </div>
       <div style={styles.chartBox}>
-      <h3 style={styles.chartTitle}>Kvalitetsvurdering (-2 til 2)</h3>
-      <h5 style={styles.chartTitle}>Hva folk synes om kvaliteten på påstanden slik den er formulert.</h5>
+        <h3 style={styles.chartTitle}>Kvalitetsvurdering (-1 til 1)</h3>
+        <h5 style={styles.chartTitle}>Hva folk synes om kvaliteten på påstanden slik den er formulert.</h5>
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={qualityData} margin={{ top: 8, right: 8, left: 8, bottom: 8 }}>
             <XAxis dataKey="name" />

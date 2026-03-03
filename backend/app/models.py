@@ -31,7 +31,7 @@ class ClaimVote(Base):
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     claim_id = Column(Integer, ForeignKey("claims.id", ondelete="CASCADE"), nullable=False)
     vote_value = Column(SmallInteger, nullable=False)  # -2 to 2
-    claim_quality = Column(Boolean, nullable=False)
+    claim_quality = Column(SmallInteger, nullable=False)  # -1 to 1
     valid_from = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     valid_to = Column(DateTime(timezone=True), nullable=True)
     is_current = Column(Boolean, nullable=False, default=True)
