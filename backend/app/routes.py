@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from .database import get_db
 from .models import Claim, ClaimVote, User
+from .auth import verify_google_token, create_access_token, get_current_user
 
 router = APIRouter()
 
@@ -30,8 +31,17 @@ class ClaimOut(BaseModel):
         from_attributes = True
 
 
+class GoogleAuthIn(BaseModel):
+    credential: str
+
+
+class TokenOut(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserOut
+
+
 class VoteIn(BaseModel):
-    user_id: int = Field(..., ge=1)
     claim_id: int = Field(..., ge=1)
     vote_value: int = Field(..., ge=-2, le=2)
     claim_quality: int = Field(..., ge=-1, le=1)
@@ -107,12 +117,37 @@ def get_claim_distribution(claim_id: int, db: Session = Depends(get_db)):
     )
 
 
-@router.post("/votes")
-def cast_vote(vote: VoteIn, db: Session = Depends(get_db)):
-    # Validate user and claim exist
-    user = db.query(User).filter(User.id == vote.user_id).first()
+@router.post("/auth/google", response_model=TokenOut)
+def auth_google(auth_in: GoogleAuthIn, db: Session = Depends(get_db)):
+    # Verify the token with Google
+    idinfo = verify_google_token(auth_in.credential)
+    
+    google_id = idinfo.get("sub")
+    email = idinfo.get("email")
+    name = idinfo.get("name", "Unknown User")
+    
+    if not google_id:
+        raise HTTPException(status_code=400, detail="Invalid Google token (no sub)")
+        
+    # Find or create user
+    user = db.query(User).filter(User.google_id == google_id).first()
+    
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        # Check by email just in case we have existing users we want to merge, but simple approach is just create
+        user = User(name=name, google_id=google_id, email=email)
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        
+    # Mint our own JWT
+    access_token = create_access_token(user_id=user.id)
+    
+    return TokenOut(access_token=access_token, user=user)
+
+
+@router.post("/votes")
+def cast_vote(vote: VoteIn, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    # Validate claim exist
     claim = db.query(Claim).filter(Claim.id == vote.claim_id).first()
     if not claim:
         raise HTTPException(status_code=404, detail="Claim not found")
@@ -123,7 +158,7 @@ def cast_vote(vote: VoteIn, db: Session = Depends(get_db)):
     existing = (
         db.query(ClaimVote)
         .filter(
-            ClaimVote.user_id == vote.user_id,
+            ClaimVote.user_id == current_user.id,
             ClaimVote.claim_id == vote.claim_id,
             ClaimVote.is_current == True,
         )
@@ -135,7 +170,7 @@ def cast_vote(vote: VoteIn, db: Session = Depends(get_db)):
 
     # Insert new current vote
     new_vote = ClaimVote(
-        user_id=vote.user_id,
+        user_id=current_user.id,
         claim_id=vote.claim_id,
         vote_value=vote.vote_value,
         claim_quality=vote.claim_quality,

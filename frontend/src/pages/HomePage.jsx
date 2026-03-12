@@ -12,9 +12,9 @@ export default function HomePage() {
             Si hva du mener om påstandene.
           </p>
         </Link>
-        <Link to="/fordeling" style={styles.card} className="card">
+        <Link to="/påstander" style={styles.card} className="card">
           <span style={styles.cardIcon}>📊</span>
-          <h2 style={styles.cardTitle}>Fordeling</h2>
+          <h2 style={styles.cardTitle}>Påstander</h2>
           <p style={styles.cardDesc}>
             Se hvordan meningene fordeler seg på hver påstand.
           </p>

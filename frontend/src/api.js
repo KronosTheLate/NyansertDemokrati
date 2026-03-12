@@ -7,6 +7,14 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 })
 
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 export async function getUsers() {
   const { data } = await api.get('/users')
   return data
@@ -29,5 +37,10 @@ export async function getDistribution(claimId) {
 
 export async function castVote(vote) {
   const { data } = await api.post('/votes', vote)
+  return data
+}
+
+export async function authGoogle(credential) {
+  const { data } = await api.post('/auth/google', { credential })
   return data
 }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import UserDropdown from '../components/UserDropdown'
 import ClaimRow from '../components/ClaimRow'
-import { getUsers, getClaims, getMyVotes, castVote } from '../api'
+import { getClaims, getMyVotes, castVote } from '../api'
+import { useAuth } from '../components/AuthContext'
 
 const DEFAULT_VOTE = { vote_value: 0, claim_quality: 0 }
 
@@ -13,9 +13,8 @@ function votesEqual(a, b) {
 }
 
 export default function VotingPage() {
-  const [users, setUsers] = useState([])
+  const { user } = useAuth()
   const [claims, setClaims] = useState([])
-  const [selectedUserId, setSelectedUserId] = useState(null)
   const [savedVotesMap, setSavedVotesMap] = useState({})
   const [draftVotesMap, setDraftVotesMap] = useState({})
   const [loading, setLoading] = useState(true)
@@ -26,11 +25,7 @@ export default function VotingPage() {
   const fetchInitial = useCallback(async () => {
     try {
       setError(null)
-      const [usersData, claimsData] = await Promise.all([
-        getUsers(),
-        getClaims(),
-      ])
-      setUsers(usersData)
+      const claimsData = await getClaims()
       setClaims(claimsData)
     } catch (err) {
       setError(err.message || 'Kunne ikke laste data')
@@ -40,13 +35,13 @@ export default function VotingPage() {
   }, [])
 
   const fetchVotes = useCallback(async () => {
-    if (!selectedUserId) {
+    if (!user) {
       setSavedVotesMap({})
       setDraftVotesMap({})
       return
     }
     try {
-      const votes = await getMyVotes(selectedUserId)
+      const votes = await getMyVotes(user.id)
       const map = {}
       votes.forEach((v) => {
         map[v.claim_id] = { vote_value: v.vote_value, claim_quality: v.claim_quality }
@@ -57,7 +52,7 @@ export default function VotingPage() {
       setSavedVotesMap({})
       setDraftVotesMap({})
     }
-  }, [selectedUserId])
+  }, [user])
 
   useEffect(() => {
     fetchInitial()
@@ -86,7 +81,7 @@ export default function VotingPage() {
   const hasChanges = getChangedClaims().length > 0
 
   const handleSave = async () => {
-    if (!hasChanges || !selectedUserId) return
+    if (!hasChanges || !user) return
     const changed = getChangedClaims()
     setSaving(true)
     setSaveError(null)
@@ -94,7 +89,6 @@ export default function VotingPage() {
       for (const claim of changed) {
         const draft = draftVotesMap[claim.id] ?? DEFAULT_VOTE
         await castVote({
-          user_id: selectedUserId,
           claim_id: claim.id,
           vote_value: draft.vote_value,
           claim_quality: draft.claim_quality,
@@ -131,14 +125,8 @@ export default function VotingPage() {
 
   return (
     <div style={styles.page}>
-      <UserDropdown
-        users={users}
-        selectedUserId={selectedUserId}
-        onSelect={setSelectedUserId}
-      />
-
-      {!selectedUserId ? (
-        <p style={styles.muted}>Velg deg selv for å stemme.</p>
+      {!user ? (
+        <p style={styles.muted}>Logg inn for å stemme.</p>
       ) : (
         <div style={styles.claimList}>
           <h2 style={styles.sectionTitle}>Dine stemmer</h2>

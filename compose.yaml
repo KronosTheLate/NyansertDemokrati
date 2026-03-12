@@ -25,13 +25,21 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql://nduser:ndpass@postgres:5432/nyansertdemokrati
+      GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID}
+    env_file:
+      - ./frontend/.env
     ports:
       - "8000:8000"
     networks:
       - ndnet
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID}
+    env_file:
+      - ./frontend/.env
     depends_on:
       - backend
     ports:

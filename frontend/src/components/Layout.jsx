@@ -1,16 +1,31 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import LoginButton from './LoginButton'
+import { useAuth } from './AuthContext'
 
 export default function Layout({ children }) {
   const location = useLocation()
   const isHome = location.pathname === '/'
+  const { user, logout } = useAuth()
 
   return (
     <div style={styles.app}>
       <header style={styles.header}>
-        <Link to="/" style={styles.logoLink}>
-          <h1 style={styles.logo}>Nyansert Demokrati</h1>
-        </Link>
+        <div style={styles.headerTop}>
+          <Link to="/" style={styles.logoLink}>
+            <h1 style={styles.logo}>Nyansert Demokrati</h1>
+          </Link>
+          <div style={styles.authContainer}>
+            {user ? (
+              <div style={styles.userInfo}>
+                <span style={styles.userName}>{user.name}</span>
+                <button onClick={logout} style={styles.logoutBtn}>Logg ut</button>
+              </div>
+            ) : (
+              <LoginButton />
+            )}
+          </div>
+        </div>
         {isHome && (
           <p style={styles.tagline}>
             Fordi vi fortjener et demokrati som er like nyansert som folkene det består av.

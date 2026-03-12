@@ -4,7 +4,9 @@
 -- Users (predefined, no auth)
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL
+    name VARCHAR(255) NOT NULL,
+    google_id VARCHAR(255) UNIQUE,
+    email VARCHAR(255) UNIQUE
 );
 
 -- Claims (predefined)

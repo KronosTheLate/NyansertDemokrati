@@ -10,6 +10,8 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(255), nullable=False)
+    google_id = Column(String(255), unique=True, nullable=True)
+    email = Column(String(255), unique=True, nullable=True)
 
     claim_votes = relationship("ClaimVote", back_populates="user")
 
